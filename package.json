@@ -1,0 +1,52 @@
+{
+  "name": "nodebb-plugin-sso-auth0-support",
+  "version": "3.0.3-SUPPORT.1",
+  "main": "library.js",
+  "author": {
+    "name": "julianlam",
+    "email": "julian@nodebb.org"
+  },
+  "bugs": {
+    "url": "https://github.com/ye-yu/nodebb-plugin-sso-auth0-support/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Julian Lam",
+      "email": "julian@nodebb.org",
+      "url": "https://github.com/julianlam/nodebb-plugin-sso-auth0"
+    },
+    {
+      "name": "Eric Miao",
+      "email": "qjmiao@gmail.com",
+      "url": "https://github.com/qjmiao/nodebb-plugin-sso-auth0"
+    },
+    {
+      "name": "Raflie Zainuddin",
+      "email": "rafolwen98@gmail.com",
+      "url": "https://github.com/ye-yu/nodebb-plugin-sso-auth0-support"
+    }
+  ],
+  "dependencies": {
+    "passport-auth0": "1.3.1"
+  },
+  "deprecated": false,
+  "description": "NodeBB Auth0 SSO - Support Build",
+  "homepage": "https://github.com/ye-yu/nodebb-plugin-sso-auth0-support#readme",
+  "keywords": [
+    "nodebb",
+    "plugin",
+    "auth0",
+    "sso",
+    "single sign on",
+    "registration"
+  ],
+  "license": "BSD-2-Clause",
+  "nbbpm": {
+    "compatibility": "^1.7.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julianlam/nodebb-plugin-sso-auth0.git"
+  }
+}
