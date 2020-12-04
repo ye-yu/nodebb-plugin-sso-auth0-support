@@ -5,13 +5,8 @@
 	var db = require.main.require('./src/database');
 	var meta = require.main.require('./src/meta');
 	var nconf = require.main.require('nconf');
-	var async = require.main.require('async');
 	var passport = require.main.require('passport');
-	var winston = require.main.require('winston');
 	var Auth0Strategy = require('passport-auth0');
-
-
-	// var authenticationController = require.main.require('./src/controllers/authentication');
 
 	var constants = Object.freeze({
 		'name': "Auth0",
