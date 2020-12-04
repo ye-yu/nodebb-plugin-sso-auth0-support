@@ -43,7 +43,7 @@
   ],
   "license": "BSD-2-Clause",
   "nbbpm": {
-    "compatibility": "^1.7.1"
+    "compatibility": "^1.15.3"
   },
   "repository": {
     "type": "git",
