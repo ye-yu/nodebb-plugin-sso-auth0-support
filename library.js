@@ -7,9 +7,9 @@
 	var nconf = require.main.require('nconf');
 	var async = require.main.require('async');
 	var passport = require.main.require('passport');
+	var winston = require.main.require('winston');
 	var Auth0Strategy = require('passport-auth0');
 
-	var winston = module.main.require('winston');
 
 	// var authenticationController = require.main.require('./src/controllers/authentication');
 
@@ -202,21 +202,7 @@
 	};
 
 	Auth0.deleteUserData = function(data, callback) {
-		var uid = data.uid;
-
-		async.waterfall([
-			async.apply(User.getUserField, uid, 'auth0id'),
-			function(oAuthIdToDelete, next) {
-				db.deleteObjectField('auth0id:uid', oAuthIdToDelete, next);
-			},
-			async.apply(db.deleteObjectField, 'user:' + uid, 'auth0id'),
-		], function(err) {
-			if (err) {
-				winston.error('[sso-auth0] Could not remove OAuthId data for uid ' + uid + '. Error: ' + err);
-				return callback(err);
-			}
-			callback(null, uid);
-		});
+		callback(new Error("Deleting account is not allowed."));
 	};
 
 	module.exports = Auth0;
