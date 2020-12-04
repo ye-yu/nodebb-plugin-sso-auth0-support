@@ -9,7 +9,7 @@
 	var Auth0Strategy = require('passport-auth0');
 
 	var constants = Object.freeze({
-		'name': "Auth0",
+		'name': "Auth0 - Support Ver.",
 		'admin': {
 			'icon': 'fa-star',
 			'route': '/plugins/sso-auth0'
