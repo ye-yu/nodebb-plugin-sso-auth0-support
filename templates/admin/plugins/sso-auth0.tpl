@@ -24,10 +24,10 @@
 			<div class="form-group alert alert-warning">
 				<label for="callback">Your NodeBB&apos;s "Authorization callback URL"</label>
 				<input type="text" id="callback" title="Authorization callback URL" class="form-control" value="{callbackURL}" readonly />
-				<p class="help-block">
-					Ensure that this value is set in your Auth0 application&apos;s settings
-				</p>
 			</div>
+			<p>
+				Ensure that this value is set in your Auth0 application&apos;s settings
+			</p>
 			<div class="checkbox">
 				<label for="disableRegistration" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
 					<input type="checkbox" class="mdl-switch__input" id="disableRegistration" name="disableRegistration" />
