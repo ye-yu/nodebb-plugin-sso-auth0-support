@@ -43,10 +43,10 @@
   ],
   "license": "BSD-2-Clause",
   "nbbpm": {
-    "compatibility": "^1.15.3"
+    "compatibility": "^1.17.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/julianlam/nodebb-plugin-sso-auth0.git"
+    "url": "git+https://github.com/ye-yu/nodebb-plugin-sso-auth0-support.git"
   }
 }
