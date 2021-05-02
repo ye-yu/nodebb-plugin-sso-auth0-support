@@ -2,7 +2,7 @@
 	"id": "nodebb-plugin-sso-auth0-support",
 	"name": "NodeBB Auth0 SSO - Support Build",
 	"description": "NodeBB Plugin that allows users to login/register via Auth0.",
-	"url": "https://github.com/julianlam/nodebb-plugin-sso-auth0",
+	"url": "https://github.com/ye-yu/nodebb-plugin-sso-auth0-support.git",
 	"library": "./library.js",
 	"hooks": [
 		{ "hook": "static:app.load", "method": "init" },
