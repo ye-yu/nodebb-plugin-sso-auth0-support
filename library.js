@@ -6,6 +6,7 @@
 	var meta = require.main.require('./src/meta');
 	var nconf = require.main.require('nconf');
 	var passport = require.main.require('passport');
+	var winston = require.main.require('winston');
 	var Auth0Strategy = require('passport-auth0');
 
 	var constants = Object.freeze({
@@ -21,6 +22,7 @@
 	Auth0.getStrategy = function(strategies, callback) {
 		meta.settings.get('sso-auth0', function(err, settings) {
 			Auth0.settings = settings;
+			winston.verbose("Using Auth0 settings:", Auth0.settings)
 
 			if (!err && settings.id && settings.secret) {
 				passport.use(new Auth0Strategy({
@@ -203,6 +205,10 @@
 	Auth0.deleteUserData = function(data, callback) {
 		callback(new Error("Deleting account is not allowed."));
 	};
+
+	Auth0.authenticateUserPage = function({ res }) {
+		if (Auth0.settings && Auth0.settings.autoAuth0Login === "on") res.redirect(nconf.get("url") + "/auth/auth0")
+	}
 
 	module.exports = Auth0;
 }(module));

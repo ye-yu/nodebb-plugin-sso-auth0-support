@@ -39,6 +39,16 @@
 				This restriction is useful if you have users bypassing registration controls by using social media accounts, or
 				if you wish to use the NodeBB registration queue.
 			</p>
+
+			<div class="checkbox">
+				<label for="autoAuth0Login" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+					<input type="checkbox" class="mdl-switch__input" id="autoAuth0Login" name="autoAuth0Login" />
+					<span class="mdl-switch__label">Automatically login to Auth0</span>
+				</label>
+			</div>
+			<p class="help-block">
+				With this enabled, NodeBB will always redirect user to the Auth0 login page if they are not authenticated.
+			</p>
 		</form>
 	</div>
 </div>

@@ -19,6 +19,8 @@ define('admin/plugins/sso-auth0', ['settings'], function(Settings) {
 					}
 				});
 			});
+
+
 		});
 	};
 
