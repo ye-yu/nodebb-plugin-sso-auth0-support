@@ -49,6 +49,17 @@
 			<p class="help-block">
 				With this enabled, NodeBB will always redirect user to the Auth0 login page if they are not authenticated.
 			</p>
+
+			<div class="checkbox">
+				<label for="displayAssociation" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+					<input type="checkbox" class="mdl-switch__input" id="displayAssociation" name="displayAssociation" />
+					<span class="mdl-switch__label">Display Auth0 association in Profile page</span>
+				</label>
+			</div>
+			<p class="help-block">
+				If disabled, NodeBB will hide Auth0 association and de-association options in the user profile page.
+			</p>
+
 		</form>
 	</div>
 </div>

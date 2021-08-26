@@ -73,20 +73,22 @@
 				return callback(err, data);
 			}
 
-			if (auth0id) {
-				data.associations.push({
-					associated: true,
-					name: constants.name,
-					icon: constants.admin.icon,
-					deauthUrl: nconf.get('url') + '/deauth/auth0',
-				});
-			} else {
-				data.associations.push({
-					associated: false,
-					url: nconf.get('url') + '/auth/auth0',
-					name: constants.name,
-					icon: constants.admin.icon
-				});
+			if (Auth0.settings.displayAssociation == "on") {
+				if (auth0id && Auth0.settings) {
+					data.associations.push({
+						associated: true,
+						name: constants.name,
+						icon: constants.admin.icon,
+						deauthUrl: nconf.get('url') + '/deauth/auth0',
+					});
+				} else {
+					data.associations.push({
+						associated: false,
+						url: nconf.get('url') + '/auth/auth0',
+						name: constants.name,
+						icon: constants.admin.icon
+					});
+				}
 			}
 
 			callback(null, data);
