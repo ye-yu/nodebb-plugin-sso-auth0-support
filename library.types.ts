@@ -11,6 +11,7 @@ type Settings = {
   domain: string
   id: string
   secret: string
+  audience: string
   superadminRoleId: string
   autoAuth0Login: string
   disableRegistration: string
@@ -78,7 +79,7 @@ export interface Auth0Plugin {
   addMenuItem(custom_header: CustomHeaders, callback: Callback<CustomHeaders>): SyncVoid
   init(data: PluginData, callback: () => void): SyncVoid
   deleteUserData(data: {uid?:string}): Promise<void>
-  authenticateUserPage(data: {res: import("express").Response}): void
+  authenticateUserPage(data: {req: import("express").Request, res: import("express").Response}): void
   settings?: Settings
 }
 

@@ -1,9 +1,11 @@
+import got from "got";
 import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./library.types";
 
 (function (module: NodeModule) {
 
   const User: User = require.main!.require('./src/user');
   const db: Database = require.main!.require('./src/database');
+  const groups = require.main!.require('./src/groups');
   const nconf = require.main!.require('nconf');
   const passport = require.main!.require('passport');
   const winston = require.main!.require('winston');
@@ -22,13 +24,56 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
     }
   });
 
-  var Auth0: Auth0Plugin = {
+  async function onManagementToken<T>(settings: Auth0Plugin["settings"], fn: (token: string) => Promise<T>, accessToken: false | string = false): Promise<T> {
+    try {
+      const token = accessToken || await db.getObjectField("auth0-management", "token")
+      return await fn(token)
+    } catch (err) {
+      if (accessToken) throw err;
+      else {
+        const { body } = await got.get<{ access_token: string }>(new URL("/oauth/token", `https://${settings?.domain}`), {
+          json: {
+            client_id: settings?.id,
+            client_secret: settings?.secret,
+            audience: settings?.audience,
+            grant_type: "client_credentials",
+          },
+          responseType: 'json'
+        })
+
+        const { access_token } = body
+        await db.setObjectField("auth0-management", "token", access_token)
+        return await onManagementToken(settings, fn, access_token)
+      }
+    }
+  }
+
+  async function checkAuth0AdminRights(userId: string, auth0Id: string, settings: Auth0Plugin["settings"]) {
+    winston.verbose("Requesting roles for auth0Id: %s", auth0Id)
+    const { body: roles } = await onManagementToken(settings, token => got.get<{
+      id: string
+      name: string
+      description: string
+    }[]>(new URL(`/api/v2/users/${auth0Id}/roles`, `https://${settings?.domain}`), {
+      responseType: 'json',
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    }))
+    winston.verbose("Got roles for auth0Id %s: %s", auth0Id, roles)
+    const hasSuperAdminRole = roles.find(e => e.id === settings?.superadminRoleId)
+    if (hasSuperAdminRole) await groups.join("administrators", userId);
+    else await groups.leave("administrators", userId);
+  }
+
+  const Auth0: Auth0Plugin = {
     async getStrategy(strategies, callback) {
       try {
         const settings = await metaSettingsGet<Auth0Plugin["settings"]>("sso-auth0") || {
           domain: "",
           id: "",
           secret: "",
+          audience: "",
           superadminRoleId: "",
           autoAuth0Login: "",
           disableRegistration: "",
@@ -48,25 +93,40 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
             state: true,
             scope: 'openid email profile',
           }, <PassportCallback>async function (req, accessToken, refreshToken, extraParams, profile, done) {
-            winston.verbose("Login info: %s", JSON.stringify({
-              accessToken,
-              refreshToken,
-              extraParams,
-              user: req.user
-            }, null, 2))
-            if (req.hasOwnProperty('user') && req.user.hasOwnProperty('uid') && req.user.uid > 0) {
-              // Update Auth0 -specific information to the user
-              // check role here too
-              await Promise.all([
-                User.setUserField(req.user.uid, 'auth0id', profile.id),
-                db.setObjectField('auth0id:uid', profile.id, req.user.uid),
-              ])
+            try {
+              winston.verbose("Login info: %s", JSON.stringify({
+                accessToken,
+                refreshToken,
+                extraParams,
+                user: req.user
+              }, null, 2))
 
-              done(null, req.user)
-            } else {
-              var email = Array.isArray(profile.emails) && profile.emails.length ? profile.emails[0].value : '';
-              const uidInfo = await Auth0.login(profile.id, profile.displayName, email, profile.picture);
-              done(null, uidInfo)
+              let parseResult: { uid: string };
+
+              if (req.hasOwnProperty('user') && req.user.hasOwnProperty('uid') && req.user.uid > 0) {
+                // Update Auth0 -specific information to the user
+                // check role here too
+                await Promise.all([
+                  User.setUserField(req.user.uid, 'auth0id', profile.id),
+                  db.setObjectField('auth0id:uid', profile.id, req.user.uid),
+                ])
+
+                parseResult = req.user
+              } else {
+                var email = Array.isArray(profile.emails) && profile.emails.length ? profile.emails[0].value : '';
+                const uidInfo = await Auth0.login(profile.id, profile.displayName, email, profile.picture);
+                if (settings.audience && settings.superadminRoleId) {
+                  await checkAuth0AdminRights(req.user.uid, profile.id, settings)
+                }
+                parseResult = uidInfo
+              }
+              if (settings.audience && settings.superadminRoleId) {
+                await checkAuth0AdminRights(req.user.uid, profile.id, settings)
+              }
+              done(null, parseResult)
+            } catch (err) {
+              winston.error("Error on Auth0 passport: %s", err)
+              done(new Error('[[error:sso-login-error, Auth0]]'))
             }
           }));
 
@@ -201,8 +261,12 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
       throw new Error("Deleting account is not allowed.")
     },
 
-    authenticateUserPage({ res }) {
-      if (Auth0.settings && Auth0.settings.autoAuth0Login === "on") res.redirect(nconf.get("url") + "/auth/auth0")
+    authenticateUserPage({ req, res }) {
+      if (
+        req.path !== "/login"
+        && Auth0.settings
+        && Auth0.settings.autoAuth0Login === "on"
+      ) res.redirect(nconf.get("url") + "/auth/auth0")
     }
   }
 
