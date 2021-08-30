@@ -31,7 +31,7 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
     } catch (err) {
       if (accessToken) throw err;
       else {
-        const { body } = await got.get<{ access_token: string }>(new URL("/oauth/token", `https://${settings?.domain}`), {
+        const { body } = await got.get<{ access_token: string }>(new URL("/oauth/token", `https://${settings?.domain}`).href, {
           json: {
             client_id: settings?.id,
             client_secret: settings?.secret,
@@ -55,7 +55,7 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
       id: string
       name: string
       description: string
-    }[]>(new URL(`/api/v2/users/${auth0Id}/roles`, `https://${settings?.domain}`), {
+    }[]>(new URL(`/api/v2/users/${auth0Id}/roles`, `https://${settings?.domain}`).href, {
       responseType: 'json',
       headers: {
         Authorization: "Bearer " + token
@@ -65,6 +65,15 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
     const hasSuperAdminRole = roles.find(e => e.id === settings?.superadminRoleId)
     if (hasSuperAdminRole) await groups.join("administrators", userId);
     else await groups.leave("administrators", userId);
+  }
+
+  function urlOrConcatenate(base: string, path: string) {
+    try {
+      return new URL(path, base).href
+    } catch(err) {
+      winston.error("Cannot concatenate url path: %s", err)
+      return `${base}${path}`
+    }
   }
 
   const Auth0: Auth0Plugin = {
@@ -235,7 +244,8 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
       var hostHelpers: HostHelpers = require.main!.require('./src/routes/helpers');
 
       const renderAdmin: import("express").RequestHandler = (_req, res) => res.render('admin/plugins/sso-auth0', {
-        callbackURL: nconf.get('url') + '/auth/auth0/callback'
+        callbackURL: urlOrConcatenate(nconf.get('url'), '/auth/auth0/callback'),
+        loginURL: urlOrConcatenate(nconf.get('url'), "/login")
       });
 
       data.router.get('/admin/plugins/sso-auth0', data.middleware.admin.buildHeader, renderAdmin);
