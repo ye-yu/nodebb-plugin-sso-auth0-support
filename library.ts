@@ -29,9 +29,13 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
       const token = accessToken || await db.getObjectField("auth0-management", "token")
       return await fn(token)
     } catch (err) {
-      if (accessToken) throw err;
+      if (accessToken) {
+        winston.verbose("Auth0 request failed, Error: %s", err)
+        throw err;
+      }
       else {
-        const { body } = await got.get<{ access_token: string }>(new URL("/oauth/token", `https://${settings?.domain}`).href, {
+        winston.verbose("Auth0 request failed, refreshing token..., Error: %s", err)
+        const { body } = await got.post<{ access_token: string }>(new URL("/oauth/token", `https://${settings?.domain}`).href, {
           json: {
             client_id: settings?.id,
             client_secret: settings?.secret,
@@ -125,14 +129,9 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
               } else {
                 var email = Array.isArray(profile.emails) && profile.emails.length ? profile.emails[0].value : '';
                 const uidInfo = await Auth0.login(profile.id, profile.displayName, email, profile.picture);
-                if (settings.audience && settings.superadminRoleId) {
-                  await checkAuth0AdminRights(req.user.uid, profile.id, settings)
-                }
                 parseResult = uidInfo
               }
-              if (settings.audience && settings.superadminRoleId) {
-                await checkAuth0AdminRights(req.user.uid, profile.id, settings)
-              }
+              if (settings.audience && settings.superadminRoleId) await checkAuth0AdminRights(parseResult.uid, profile.id, settings);
               done(null, parseResult)
             } catch (err) {
               winston.error("Error on Auth0 passport: %s", err)
