@@ -48,6 +48,15 @@
 				<label for="secret">Client Secret</label>
 				<input type="text" name="secret" title="Client Secret" class="form-control" placeholder="Client Secret" />
 			</div>
+			<div class="form-group">
+				<label for="audience">API Management Audience</label>
+				<input type="text" name="audience" title="API Management Audience" class="form-control" placeholder="API Management Audience" />
+				<p class="help-block auth0-required">
+					Remember to allow Management API access for grant 
+					<code>client_credentials</code>
+					in your Auth0 client app.
+				</p>
+			</div>
 			<div class="alert alert-warning">
 				<label for="callback">Your NodeBB&apos;s "Authorization callback URL"</label>
 				<input type="text" id="callback" title="Authorization callback URL" class="form-control" value="{callbackURL}" readonly />
