@@ -48,7 +48,8 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
     }
   }
 
-  async function checkAuth0AdminRights(userId: string, auth0Id: string, settings: Auth0Plugin["settings"]) {
+  async function checkAuth0AdminRights(userId: string | number, auth0Id: string, settings: Auth0Plugin["settings"]) {
+    if (userId === 1 || userId === 0) return;
     winston.verbose("Requesting roles for auth0Id: %s", auth0Id)
     const { body: roles } = await onManagementToken(settings, token => got.get<{
       id: string
