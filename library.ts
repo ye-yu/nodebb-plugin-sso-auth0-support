@@ -45,26 +45,28 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
             clientSecret: settings.secret,
             callbackURL: nconf.get('url') + '/auth/auth0/callback',
             passReqToCallback: true,
-            state: false,	// this is ok because nodebb core passes state through in .authenticate()
+            state: true,
             scope: 'openid email profile',
           }, <PassportCallback>async function (req, accessToken, refreshToken, extraParams, profile, done) {
-            winston.verbose({
+            winston.verbose("Login info: %s", JSON.stringify({
               accessToken,
               refreshToken,
-              extraParams
-            })
+              extraParams,
+              user: req.user
+            }, null, 2))
             if (req.hasOwnProperty('user') && req.user.hasOwnProperty('uid') && req.user.uid > 0) {
-              // Save Auth0 -specific information to the user
+              // Update Auth0 -specific information to the user
+              // check role here too
               await Promise.all([
                 User.setUserField(req.user.uid, 'auth0id', profile.id),
                 db.setObjectField('auth0id:uid', profile.id, req.user.uid),
               ])
 
+              done(null, req.user)
+            } else {
               var email = Array.isArray(profile.emails) && profile.emails.length ? profile.emails[0].value : '';
               const uidInfo = await Auth0.login(profile.id, profile.displayName, email, profile.picture);
               done(null, uidInfo)
-            } else {
-              done(new Error('[[error:sso-auth0-login-failed, Auth0]]'))
             }
           }));
 
@@ -73,7 +75,8 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
             url: '/auth/auth0',
             callbackURL: '/auth/auth0/callback',
             icon: constants.admin.icon,
-            scope: 'openid email profile'
+            scope: 'openid email profile',
+            checkState: false, 	// this is ok because nodebb core passes state through in .authenticate()
           });
         }
         callback(null, strategies);
@@ -185,12 +188,12 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
       data.router.post('/deauth/auth0', [data.middleware.requireUser, data.middleware.applyCSRF], <import("express").RequestHandler>async function (req, res, next) {
         try {
           await Auth0.deleteUserData({ uid: (req as any).user.uid })
-          callback();
         } catch (err) {
           if (err) return next(err);
           res.redirect(nconf.get('relative_path') + '/me/edit');
         }
       });
+      callback();
     },
 
     async deleteUserData() {

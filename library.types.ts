@@ -4,6 +4,7 @@ type Strategies = {
   callbackURL: string
   icon: string
   scope: string
+  checkState: boolean
 }
 
 type Settings = {
@@ -24,7 +25,7 @@ type WhitelistInfo = {
 
 type Callback<T = any> = (err: null | Error, data?: T) => void
 
-export type PassportCallback = (req: Express.Request & { user: { uid: number }}, token: string, _: string, __: string, profile: { id: string, emails?: { value:string }[], displayName: string, picture: string }, done: Callback) => void
+export type PassportCallback = (req: any, token: string, _: string, __: string, profile: { id: string, emails?: { value:string }[], displayName: string, picture: string }, done: Callback) => void
 
 type UserAssociations = {
   uid: string,
