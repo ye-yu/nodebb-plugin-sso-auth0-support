@@ -97,6 +97,17 @@
 				</p>
 			</div>
 			<div class="checkbox">
+				<label for="disableGDPR" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+					<input type="checkbox" class="mdl-switch__input" id="disableGDPR" name="disableGDPR" />
+					<span class="mdl-switch__label">Disable GDPR Consent Page Upon Signup</span>
+				</label>
+				<p class="help-block">
+					Upon sign up with Auth0, the user will automatically accept the GDPR consent page.
+					Make sure that you have done the responsibility to provide a GDPR consent page to the user!
+				</p>
+			</div>
+
+			<div class="checkbox">
 				<label for="disableRegistration" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
 					<input type="checkbox" class="mdl-switch__input" id="disableRegistration" name="disableRegistration" />
 					<span class="mdl-switch__label">Disable user registration via SSO</span>

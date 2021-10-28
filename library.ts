@@ -80,6 +80,14 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
     }
   }
 
+  async function checkAutoConsented(uid:string) {
+    if (Auth0.settings?.disableGDPR !== "on") return;
+    const consented = await db.getObjectField(`user:${uid}`, 'gdpr_consent')
+    if (parseInt(consented, 10) !== 1) {
+      await db.setObjectField(`user:${uid}`, 'gdpr_consent', 1)
+    }
+  }
+
   const Auth0: Auth0Plugin = {
     async getStrategy(strategies, callback) {
       try {
@@ -93,6 +101,7 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
           disableRegistration: "",
           displayAssociation: "",
           preventDeletion: "",
+          disableGDPR: "",
         }
         Auth0.settings = settings
         winston.verbose("Using Auth0 settings:", Auth0.settings)
@@ -112,6 +121,7 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
                 accessToken,
                 refreshToken,
                 extraParams,
+                profile,
                 user: req.user
               }, null, 2))
 
@@ -120,6 +130,7 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
               if (req.hasOwnProperty('user') && req.user.hasOwnProperty('uid') && req.user.uid > 0) {
                 // Update Auth0 -specific information to the user
                 // check role here too
+
                 await Promise.all([
                   User.setUserField(req.user.uid, 'auth0id', profile.id),
                   db.setObjectField('auth0id:uid', profile.id, req.user.uid),
@@ -132,6 +143,7 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
                 parseResult = uidInfo
               }
               if (settings.audience && settings.superadminRoleId) await checkAuth0AdminRights(parseResult.uid, profile.id, settings);
+              await checkAutoConsented(parseResult.uid)
               done(null, parseResult)
             } catch (err) {
               winston.error("Error on Auth0 passport: %s", err)
@@ -194,9 +206,14 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
       if (username === email) {
         username = email.split("@")[0];
       }
-      // TODO: Check if role is superadmin
-      const uid: string | undefined = await Auth0.getUidByAuth0ID(auth0Id)
+
+      let uid: string | undefined = await Auth0.getUidByAuth0ID(auth0Id)
+
+      // Check if UID has been deleted by admin before or not
+      if (!await User.getUserField(uid, "auth0id")) uid = undefined
+
       if (uid) return { uid }
+
       else {
         // New User
         const postRegistration = async function (uid: string) {

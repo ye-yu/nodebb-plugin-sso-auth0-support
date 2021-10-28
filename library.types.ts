@@ -17,6 +17,7 @@ type Settings = {
   disableRegistration: string
   displayAssociation: string
   preventDeletion: string
+  disableGDPR: string
   [any: string]: string
 }
 
