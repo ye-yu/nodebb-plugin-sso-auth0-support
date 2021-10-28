@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-sso-auth0-support",
-  "version": "3.0.3-SUPPORT.1",
+  "version": "3.0.3-SUPPORT.2",
   "main": "library.js",
   "author": {
     "name": "julianlam",
