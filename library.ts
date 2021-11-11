@@ -11,6 +11,8 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
   const winston = require.main!.require('winston');
   const Auth0Strategy = require('passport-auth0');
   const meta = require.main!.require('./src/meta');
+  const plugins = require.main!.require('./src/plugins');
+
 
   async function metaSettingsGet<T = any>(key: string) {
     return new Promise<T>((res, rej) => meta.settings.get(key, (err: any, data: T) => err ? rej(err) : res(data)))
@@ -144,6 +146,11 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
               }
               if (settings.audience && settings.superadminRoleId) await checkAuth0AdminRights(parseResult.uid, profile.id, settings);
               await checkAutoConsented(parseResult.uid)
+              plugins.hooks.fire('action:user.auth0LoggedIn', {
+                nodebbid: parseResult.uid,
+                auth0id: profile.id,
+              });
+
               done(null, parseResult)
             } catch (err) {
               winston.error("Error on Auth0 passport: %s", err)
