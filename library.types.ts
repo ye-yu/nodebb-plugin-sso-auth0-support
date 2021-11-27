@@ -81,6 +81,7 @@ export interface Auth0Plugin {
   init(data: PluginData, callback: () => void): SyncVoid
   deleteUserData(data: {uid?:string}): Promise<void>
   authenticateUserPage(data: {req: import("express").Request, res: import("express").Response}): void
+  logout(payload: {req: import("express").Request, res: import("express").Response, uid:string, sessionID:string}): Promise<void>
   settings?: Settings
 }
 

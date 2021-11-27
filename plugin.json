@@ -11,7 +11,8 @@
 		{ "hook": "filter:admin.header.build", "method": "addMenuItem" },
 		{ "hook": "static:user.delete", "method": "deleteUserData" },
 		{ "hook": "filter:user.whitelistFields", "method": "appendUserHashWhitelist" },
-		{ "hook": "response:middleware.authenticate", "method": "authenticateUserPage" }
+		{ "hook": "response:middleware.authenticate", "method": "authenticateUserPage" },
+		{ "hook": "static:user.loggedOut", "method": "logout" }
 	],
 	"templates": "./templates",
 	"acpScripts": [

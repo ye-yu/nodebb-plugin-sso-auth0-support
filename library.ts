@@ -301,6 +301,14 @@ import { Auth0Plugin, Database, HostHelpers, PassportCallback, User } from "./li
         && Auth0.settings
         && Auth0.settings.autoAuth0Login === "on"
       ) res.redirect(nconf.get("url") + "/auth/auth0")
+    },
+
+    async logout({res, uid}) {
+      const auth0Uid = await User.getUserField(uid, "auth0id")
+      if (!auth0Uid) return
+      res.send({
+        next: urlOrConcatenate("https://" + (Auth0.settings?.domain || ""), `/v2/logout?returnTo=${encodeURIComponent(nconf.get("url"))}`)
+      })
     }
   }
 
